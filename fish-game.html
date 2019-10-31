@@ -44,6 +44,7 @@
 
     var log = console.log.bind(console);
 
+    //生成指定范围的随机数
     var randomNum = function (min, max) {
       return parseInt(Math.random() * (max - min + 1) + min, 10)
     }
@@ -64,6 +65,11 @@
       }
 
       return a + d * t;
+    }
+
+    //碰撞检测
+    var isIntersection = function (x1, y1, x2, y2) {
+      return Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2);
     }
 
     var Plant = function (cxt1) {
@@ -134,6 +140,11 @@
       this.type[i] = i % 3 === 0 ? 'blue' : 'orange';
     }
 
+    Food.prototype.dead = function (i) {
+      this.alive[i] = false;
+      this.active_cnt--;
+    }
+
     Food.prototype.make = function () {
       if (this.active_cnt < this.limit) {
         this.alive.forEach((value, index) => {
@@ -179,20 +190,34 @@
       this.stage = stage;
     }
 
+    //绘制大鱼
     Fish.prototype.draw = function () {
       this.y = lerpDistance(pointY, this.y, 0.95);
       this.x = lerpDistance(pointX, this.x, 0.95);
-
       var deltaX = this.x - pointX;
       var deltaY = this.y - pointY;
       var beta = Math.atan2(deltaY, deltaX) + Math.PI;
       this.angle = lerpAngle(beta, this.angle, 0.9)
       this.stage.save();
+      //实现大鱼的旋转效果
       this.stage.translate(this.x, this.y);
       this.stage.rotate(this.angle);
       this.stage.drawImage(this.body, -this.body.width, -this.body.height * 0.5, this.body.width, this.body.height);
       this.stage.restore();
     }
+
+    //大鱼吃果实的动作
+    var eat = function () {
+      food.alive.forEach((value, index) => {
+        if (value === true) {
+          var result = isIntersection(food.x[index], food.y[index], fish.x, fish.y);
+          if (result < 600) {
+            food.dead(index);
+          }
+        }
+      })
+    }
+
 
     var drawBg = function () {
       //绘制背景
@@ -211,6 +236,7 @@
       food.make();
       food.draw();
       fish.draw();
+      eat();
     }
 
     var cxt1
