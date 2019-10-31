@@ -1,0 +1,261 @@
+<!DOCTYPE HTML>
+<html>
+<style>
+  .wrapper {
+    width: 1200px;
+    height: 500px;
+    margin: 0 auto;
+    text-align: center;
+    line-height: 500px;
+    border: 1px solid #eee;
+    margin-top: 100px;
+  }
+
+  canvas {
+    width: 1200px;
+    height: 500px;
+    position: relative;
+  }
+
+  #canvas1 {
+    z-index: 1;
+  }
+
+  #canvas2 {
+    z-index: 2;
+  }
+</style>
+<body>
+<div class="wrapper">
+  <canvas id="canvas1" width="1200" height="500">
+    Your browser does not support the canvas element.
+  </canvas>
+  <canvas id="canvas2">
+    Your browser does not support the canvas element.
+  </canvas>
+</div>
+
+<script type="text/javascript">
+  window.onload = function () {
+    window.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame
+    window.cancelAnimationFrame = window.cancelAnimationFrame || window.mozCancelAnimationFrame || function (requestID) {
+      clearTimeout(requestID)
+    }
+
+    var log = console.log.bind(console);
+
+    var randomNum = function (min, max) {
+      return parseInt(Math.random() * (max - min + 1) + min, 10)
+    }
+
+    var lerpDistance = function (aim, cur, ratio) {
+      var diff = cur - aim;
+      return aim + diff * ratio;
+    }
+
+    var lerpAngle = function (a, b, t) {
+      var d = b - a;
+      if (d > Math.PI) {
+        d = d - 2 * Math.PI;
+      }
+
+      if (d < -Math.PI) {
+        d = d + 2 * Math.PI
+      }
+
+      return a + d * t;
+    }
+
+    var Plant = function (cxt1) {
+      this.x = [];
+      this.h = [];
+      this.num = 60;
+      this.width = 20;
+      this.stage = cxt1;
+    };
+
+    Plant.prototype.init = function () {
+      for (var i = 0; i < this.num; i++) {
+        this.x[i] = i * this.width + randomNum(1, 10);
+        this.h[i] = randomNum(80, 150);
+      }
+    }
+
+    Plant.prototype.draw = function () {
+      this.stage.save();
+      this.stage.globalAlpha = 0.8;
+      this.stage.strokeStyle = '#8AD4DC';
+      this.stage.lineWidth = this.width;
+      this.stage.lineCap = 'round';
+      for (var i = 0; i < this.num; i++) {
+        this.stage.beginPath();
+        this.stage.moveTo(this.x[i], clientHeight);
+        this.stage.lineTo(this.x[i], clientHeight - this.h[i]);
+        this.stage.stroke();
+        this.stage.closePath();
+      }
+      this.stage.restore();
+    }
+
+    var Food = function (stage) {
+      this.x = [];
+      this.y = [];
+      this.size = [];
+      this.speed = [];
+      this.alive = [];
+      this.type = [];
+      this.active_cnt = 0;
+      this.limit = 15;
+      this.num = 30;
+      this.stage = stage;
+      this.orange = new Image();
+      this.orange.src = './food1.png';
+      this.blue = new Image();
+      this.blue.src = './food2.png';
+    };
+
+    Food.prototype.init = function () {
+      for (var i = 0; i < this.num; i++) {
+        this.x[i] = 0;
+        this.y[i] = 0;
+        this.size[i] = 0;
+        this.speed[i] = 0;
+        this.alive[i] = false;
+      }
+    };
+
+    Food.prototype.born = function (i) {
+      var index = randomNum(1, 50);
+      this.alive[i] = true;
+      this.size[i] = 0;
+      this.x[i] = plant.x[index] - 9;
+      this.y[i] = clientHeight - plant.h[index] - 10;
+      this.speed[i] = randomNum(1, 5) * 0.01;
+      this.type[i] = i % 3 === 0 ? 'blue' : 'orange';
+    }
+
+    Food.prototype.make = function () {
+      if (this.active_cnt < this.limit) {
+        this.alive.forEach((value, index) => {
+          if (value === false && this.active_cnt < this.limit) {
+            this.born(index);
+            this.active_cnt++;
+          }
+        })
+      }
+    }
+
+    Food.prototype.draw = function () {
+      var type;
+      for (var i = 0; i < this.limit; i++) {
+        if (this.alive[i] === false) break;
+
+        if (this.size[i] <= 1) {
+          this.size[i] += this.speed[i] * 0.05;
+        } else {
+          this.y[i] -= this.speed[i] * intervalTime;
+        }
+
+        type = this.type[i] === 'blue' ? this.blue : this.orange;
+
+        this.stage.drawImage(type, this.x[i], this.y[i], 18 * this.size[i], 18 * this.size[i]);
+
+        if (this.y[i] < 0) {
+          this.alive[i] = false;
+          this.active_cnt--;
+        }
+      }
+    }
+
+    var Fish = function () {
+      this.x = clientWidth * 0.5;
+      this.y = clientHeight * 0.5;
+      this.body = new Image();
+      this.body.src = './fish.png';
+      this.angle = 0;
+    }
+
+    Fish.prototype.init = function (stage) {
+      this.stage = stage;
+    }
+
+    Fish.prototype.draw = function () {
+      this.y = lerpDistance(pointY, this.y, 0.95);
+      this.x = lerpDistance(pointX, this.x, 0.95);
+
+      var deltaX = this.x - pointX;
+      var deltaY = this.y - pointY;
+      var beta = Math.atan2(deltaY, deltaX) + Math.PI;
+      this.angle = lerpAngle(beta, this.angle, 0.9)
+      this.stage.save();
+      this.stage.translate(this.x, this.y);
+      this.stage.rotate(this.angle);
+      this.stage.drawImage(this.body, -this.body.width, -this.body.height * 0.5, this.body.width, this.body.height);
+      this.stage.restore();
+    }
+
+    var drawBg = function () {
+      //绘制背景
+      var image = new Image();
+      image.src = './bg.jpg';
+      cxt1.drawImage(image, 0, 0, clientWidth, clientHeight);
+    }
+
+    function run() {
+      requestAnimationFrame(run);
+      var now = +new Date();
+      intervalTime = now - lastTime;
+      lastTime = now;
+      drawBg();
+      plant.draw();
+      food.make();
+      food.draw();
+      fish.draw();
+    }
+
+    var cxt1
+      , cxt2
+      , food
+      , fish
+      , plant
+      , pointX
+      , pointY
+      , lastTime = 0
+      , intervalTime = 0
+      , clientWidth = 1200
+      , clientHeight = 500;
+
+    var init = function () {
+      var canvas1 = document.querySelector('#canvas1');
+      cxt1 = canvas1.getContext("2d");
+
+      var canvas2 = document.querySelector('#canvas2');
+      cxt2 = canvas2.getContext("2d");
+
+      canvas1.addEventListener('mousemove', (e) => {
+        pointX = e.offsetX || e.layerX;
+        pointY = e.offsetY || e.layerY;
+      }, false);
+
+      pointX = clientWidth * 0.5;
+      pointY = clientHeight * 0.5;
+
+      plant = new Plant(cxt1);
+      plant.init();
+
+      fish = new Fish();
+      fish.init(cxt1);
+
+      food = new Food(cxt1);
+      food.init();
+
+      run();
+    }();
+
+  }
+
+
+</script>
+
+</body>
+</html>
