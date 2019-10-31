@@ -197,12 +197,39 @@
       var deltaX = this.x - pointX;
       var deltaY = this.y - pointY;
       var beta = Math.atan2(deltaY, deltaX) + Math.PI;
-      this.angle = lerpAngle(beta, this.angle, 0.9)
+      this.angle = lerpAngle(beta, this.angle, 0.9);
       this.stage.save();
       //实现大鱼的旋转效果
       this.stage.translate(this.x, this.y);
       this.stage.rotate(this.angle);
       this.stage.drawImage(this.body, -this.body.width, -this.body.height * 0.5, this.body.width, this.body.height);
+      this.stage.restore();
+    }
+
+    //鱼宝宝
+    var Baby = function () {
+      this.x = clientWidth * 0.5 - 50;
+      this.y = clientHeight * 0.5 + 50;
+      this.body = new Image();
+      this.body.src = './baby.png';
+      this.angle = 0;
+    }
+
+    Baby.prototype.init = function (stage) {
+      this.stage = stage;
+    }
+
+    Baby.prototype.draw = function () {
+      this.stage.save();
+      this.x = lerpDistance(fish.x, this.x, 0.98);
+      this.y = lerpDistance(fish.y, this.y, 0.98);
+      var deltaX = this.x - fish.x;
+      var deltaY = this.y - fish.y;
+      var beta = Math.atan2(deltaY, deltaX) + Math.PI;
+      this.angle = lerpAngle(beta, this.angle, 0.9)
+      this.stage.translate(this.x, this.y);
+      this.stage.rotate(this.angle);
+      this.stage.drawImage(this.body, -this.body.width * 0.5, -this.body.height * 0.5, 45, 45);
       this.stage.restore();
     }
 
@@ -231,11 +258,18 @@
       var now = +new Date();
       intervalTime = now - lastTime;
       lastTime = now;
+      //绘制背景
       drawBg();
+      //绘制植物
       plant.draw();
+      //绘制食物
       food.make();
       food.draw();
+      //绘制鱼妈妈
       fish.draw();
+      //绘制鱼宝宝
+      baby.draw();
+      //监听鱼妈妈是否吃到食物
       eat();
     }
 
@@ -243,6 +277,7 @@
       , cxt2
       , food
       , fish
+      , baby
       , plant
       , pointX
       , pointY
@@ -271,6 +306,9 @@
 
       fish = new Fish();
       fish.init(cxt1);
+
+      baby = new Baby();
+      baby.init(cxt1);
 
       food = new Food(cxt1);
       food.init();
