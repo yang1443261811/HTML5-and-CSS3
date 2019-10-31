@@ -184,6 +184,7 @@
       this.body = new Image();
       this.body.src = './fish.png';
       this.angle = 0;
+      this.foodCnt = 0;
     }
 
     Fish.prototype.init = function (stage) {
@@ -213,10 +214,27 @@
       this.body = new Image();
       this.body.src = './baby.png';
       this.angle = 0;
+      //鱼宝宝的生命值
+      this.HP = 10;
+      this.timer = 0;
     }
 
     Baby.prototype.init = function (stage) {
       this.stage = stage;
+    }
+
+    //鱼宝宝的生命值消耗
+    Baby.prototype.expend = function () {
+      this.timer += intervalTime;
+      if (this.timer > 1500) {
+        this.timer = 0;
+        if (this.HP <= 1) {
+          console.log('dead')
+        } else {
+          this.HP--;
+          console.log('expend')
+        }
+      }
     }
 
     Baby.prototype.draw = function () {
@@ -229,8 +247,13 @@
       this.angle = lerpAngle(beta, this.angle, 0.9)
       this.stage.translate(this.x, this.y);
       this.stage.rotate(this.angle);
+      this.stage.globalAlpha = 0.1 * this.HP;
+      // this.stage.drawImage(this.body, -this.body.width * 0.5, -this.body.height * 0.5, 45 * this.HP * 0.1, 45 * this.HP * 0.1);
       this.stage.drawImage(this.body, -this.body.width * 0.5, -this.body.height * 0.5, 45, 45);
       this.stage.restore();
+      //鱼宝宝生命值消耗
+      this.expend();
+
     }
 
     //大鱼吃果实的动作
@@ -240,9 +263,21 @@
           var result = isIntersection(food.x[index], food.y[index], fish.x, fish.y);
           if (result < 600) {
             food.dead(index);
+            fish.foodCnt++;
           }
         }
       })
+    }
+
+    //鱼妈妈给宝宝喂食
+    var feed = function () {
+      var result = isIntersection(baby.x, baby.y, fish.x, fish.y);
+      if (result < 600) {
+        if (fish.foodCnt > 0 && baby.HP <= 10) {
+          fish.foodCnt--;
+          baby.HP++;
+        }
+      }
     }
 
 
@@ -254,7 +289,9 @@
     }
 
     function run() {
+      //循环执行
       requestAnimationFrame(run);
+      //计数每帧之间的时间差
       var now = +new Date();
       intervalTime = now - lastTime;
       lastTime = now;
@@ -271,6 +308,8 @@
       baby.draw();
       //监听鱼妈妈是否吃到食物
       eat();
+      //鱼妈妈给宝宝喂食
+      feed();
     }
 
     var cxt1
@@ -313,12 +352,12 @@
       food = new Food(cxt1);
       food.init();
 
+      console.log(2900 % 1000)
+
       run();
     }();
 
   }
-
-
 </script>
 
 </body>
