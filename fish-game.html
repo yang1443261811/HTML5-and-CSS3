@@ -195,10 +195,10 @@
     //绘制大鱼
     Fish.prototype.draw = function () {
       this.stage.save();
-      this.y = lerpDistance(pointY, this.y, 0.95);
-      this.x = lerpDistance(pointX, this.x, 0.95);
-      var deltaX = this.x - pointX;
-      var deltaY = this.y - pointY;
+      this.y = lerpDistance(mouse.y, this.y, 0.95);
+      this.x = lerpDistance(mouse.x, this.x, 0.95);
+      var deltaX = this.x - mouse.x;
+      var deltaY = this.y - mouse.y;
       var beta = Math.atan2(deltaY, deltaX) + Math.PI;
       this.angle = lerpAngle(beta, this.angle, 0.9);
       //实现大鱼的旋转效果
@@ -215,27 +215,10 @@
       this.body = new Image();
       this.body.src = './baby.png';
       this.angle = 0;
-      //鱼宝宝的生命值
-      this.HP = 10;
-      this.timer = 0;
     }
 
     Baby.prototype.init = function (stage) {
       this.stage = stage;
-    }
-
-    //鱼宝宝的生命值消耗
-    Baby.prototype.expend = function () {
-      this.timer += intervalTime;
-      if (this.timer > 1500) {
-        this.timer = 0;
-        if (this.HP <= 1) {
-          console.log('dead')
-        } else {
-          this.HP--;
-          console.log('expend')
-        }
-      }
     }
 
     Baby.prototype.draw = function () {
@@ -248,23 +231,73 @@
       this.angle = lerpAngle(beta, this.angle, 0.9)
       this.stage.translate(this.x, this.y);
       this.stage.rotate(this.angle);
-      this.stage.globalAlpha = 0.1 * this.HP;
-      // this.stage.drawImage(this.body, -this.body.width * 0.5, -this.body.height * 0.5, 45 * this.HP * 0.1, 45 * this.HP * 0.1);
+      this.stage.globalAlpha = HP.value <= 0 ? 0 : (HP.value / 100);
       this.stage.drawImage(this.body, -this.body.width * 0.5, -this.body.height * 0.5, 45, 45);
       this.stage.restore();
-      //鱼宝宝生命值消耗
-      this.expend();
+    }
 
+    //生命值的类
+    var HP = function (stage) {
+      this.stage = '';
+      this.value = 0;
+      this.x = 0;
+      this.y = 0;
+    }
+
+    HP.prototype = {
+      //构造函数
+      constructor: HP,
+
+      //初始化
+      init: function (stage, value) {
+        this.stage = stage;
+        this.maxValue = value;
+        this.value = value;
+        this.x = 40;
+        this.y = 20;
+      },
+
+      //血量消耗
+      expend: function () {
+        if (this.value <= 0) {
+          gameOver(cxt1);
+        } else {
+          this.value -= 0.07;
+        }
+      },
+
+      //绘制
+      draw: function () {
+        this.stage.save();
+        this.stage.translate(this.x, this.y);
+        this.stage.font = "14px Verdana";
+        this.stage.fillStyle = 'red';
+        this.stage.fillText('HP', -30, 9);
+        this.stage.fillRect(0, 0, this.value, 10);
+        this.stage.restore();
+      }
+    }
+
+    //
+    var wave = function () {
+      this.x = [];
+      this.y = [];
+      this.alive = [];
+      //半径
+      this.radius = [];
     }
 
     //大鱼吃果实的动作
     var eat = function () {
       food.alive.forEach((value, index) => {
         if (value === true) {
+          //计算鱼妈妈与食物是否相撞,相撞才能吃果实
           var result = isIntersection(food.x[index], food.y[index], fish.x, fish.y);
           if (result < 600) {
+            //吃掉的果实隐藏
             food.dead(index);
-            fish.foodCnt++;
+            //累计鱼妈妈吃的果实
+            fish.foodCnt += 2;
           }
         }
       })
@@ -272,21 +305,46 @@
 
     //鱼妈妈给宝宝喂食
     var feed = function () {
+      //计算鱼妈妈与鱼宝宝是否相撞,当他们相撞时才能喂食
       var result = isIntersection(baby.x, baby.y, fish.x, fish.y);
       if (result < 600) {
-        if (fish.foodCnt > 0 && baby.HP <= 10) {
+        if (fish.foodCnt > 0 && HP.value <= HP.maxValue) {
+          //当鱼妈妈喂食时需要减去自己所持有的果实数量
           fish.foodCnt--;
-          baby.HP++;
+          //鱼宝宝获得食物后增加生命值
+          HP.value++;
         }
       }
     }
 
 
+    //绘制背景
     var drawBg = function () {
-      //绘制背景
       var image = new Image();
       image.src = './bg.jpg';
       cxt2.drawImage(image, 0, 0, clientWidth, clientHeight);
+    }
+
+    //游戏结束
+    var gameOver = function (stage) {
+      stage.save();
+      //使文字的透明度呈渐变的
+      alpha += intervalTime * 0.0003;
+      if (alpha > 1) alpha = 1;
+      stage.fillStyle = "rgba(255, 255, 255, " + alpha + ")";
+      stage.font = '26px Verdana';
+      stage.shadowBlur = 2;
+      stage.shadowColor = 'white';
+      stage.fillText('GAME OVER', clientWidth * 0.45, clientHeight * 0.5)
+      stage.restore();
+    }
+
+    //获取鼠标在canvas中的位置
+    var Capturemouse = function (element) {
+      element.addEventListener('mousemove', (e) => {
+        mouse.x = e.offsetX || e.layerX;
+        mouse.y = e.offsetY || e.layerY;
+      }, false);
     }
 
     function run() {
@@ -298,6 +356,7 @@
       lastTime = now;
       //绘制背景
       drawBg();
+      //清空画布1
       cxt1.clearRect(0, 0, clientWidth, clientHeight);
       //绘制植物
       plant.draw();
@@ -312,20 +371,25 @@
       eat();
       //鱼妈妈给宝宝喂食
       feed();
+      //绘制血量
+      HP.draw();
+      //鱼宝宝生命值消耗
+      HP.expend();
     }
 
     var cxt1
       , cxt2
+      , HP
       , food
       , fish
       , baby
       , plant
-      , pointX
-      , pointY
+      , alpha = 0
       , lastTime = 0
       , intervalTime = 0
       , clientWidth = 1200
-      , clientHeight = 500;
+      , clientHeight = 500
+      , mouse = {x: 0, y: 0};
 
     var init = function () {
       var canvas1 = document.querySelector('#canvas1');
@@ -333,14 +397,11 @@
 
       var canvas2 = document.querySelector('#canvas2');
       cxt2 = canvas2.getContext("2d");
+      //捕获鼠标位置
+      Capturemouse(canvas1);
 
-      canvas1.addEventListener('mousemove', (e) => {
-        pointX = e.offsetX || e.layerX;
-        pointY = e.offsetY || e.layerY;
-      }, false);
-
-      pointX = clientWidth * 0.5;
-      pointY = clientHeight * 0.5;
+      mouse.x = clientWidth * 0.5;
+      mouse.y = clientHeight * 0.5;
 
       plant = new Plant(cxt2);
       plant.init();
@@ -353,6 +414,10 @@
 
       food = new Food(cxt2);
       food.init();
+
+      HP = new HP();
+      HP.init(cxt1, 150);
+
       run();
     }();
 
