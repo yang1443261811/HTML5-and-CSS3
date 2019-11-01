@@ -9,19 +9,20 @@
     line-height: 500px;
     border: 1px solid #eee;
     margin-top: 100px;
-  }
-
-  canvas {
-    width: 1200px;
-    height: 500px;
     position: relative;
   }
 
-  #canvas1 {
-    z-index: 1;
+  #canvas1, #canvas2 {
+    position: absolute;
+    left: 0;
+    top: 0;
   }
 
   #canvas2 {
+    z-index: 1;
+  }
+
+  #canvas1 {
     z-index: 2;
   }
 </style>
@@ -30,7 +31,7 @@
   <canvas id="canvas1" width="1200" height="500">
     Your browser does not support the canvas element.
   </canvas>
-  <canvas id="canvas2">
+  <canvas id="canvas2" width="1200" height="500">
     Your browser does not support the canvas element.
   </canvas>
 </div>
@@ -193,13 +194,13 @@
 
     //绘制大鱼
     Fish.prototype.draw = function () {
+      this.stage.save();
       this.y = lerpDistance(pointY, this.y, 0.95);
       this.x = lerpDistance(pointX, this.x, 0.95);
       var deltaX = this.x - pointX;
       var deltaY = this.y - pointY;
       var beta = Math.atan2(deltaY, deltaX) + Math.PI;
       this.angle = lerpAngle(beta, this.angle, 0.9);
-      this.stage.save();
       //实现大鱼的旋转效果
       this.stage.translate(this.x, this.y);
       this.stage.rotate(this.angle);
@@ -285,7 +286,7 @@
       //绘制背景
       var image = new Image();
       image.src = './bg.jpg';
-      cxt1.drawImage(image, 0, 0, clientWidth, clientHeight);
+      cxt2.drawImage(image, 0, 0, clientWidth, clientHeight);
     }
 
     function run() {
@@ -297,6 +298,7 @@
       lastTime = now;
       //绘制背景
       drawBg();
+      cxt1.clearRect(0, 0, clientWidth, clientHeight);
       //绘制植物
       plant.draw();
       //绘制食物
@@ -340,7 +342,7 @@
       pointX = clientWidth * 0.5;
       pointY = clientHeight * 0.5;
 
-      plant = new Plant(cxt1);
+      plant = new Plant(cxt2);
       plant.init();
 
       fish = new Fish();
@@ -349,11 +351,8 @@
       baby = new Baby();
       baby.init(cxt1);
 
-      food = new Food(cxt1);
+      food = new Food(cxt2);
       food.init();
-
-      console.log(2900 % 1000)
-
       run();
     }();
 
