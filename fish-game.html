@@ -74,21 +74,28 @@
     }
 
     var Plant = function (cxt1) {
-      this.x = [];
-      this.h = [];
+      this.rootx = [];
+      this.headx = [];
+      this.heady = [];
       this.num = 60;
       this.width = 20;
       this.stage = cxt1;
+      this.alpha = 0;
+      this.amp = [];
     };
 
     Plant.prototype.init = function () {
       for (var i = 0; i < this.num; i++) {
-        this.x[i] = i * this.width + randomNum(1, 10);
-        this.h[i] = randomNum(80, 150);
+        this.rootx[i] = i * this.width + randomNum(1, 10);
+        this.headx[i] = this.rootx[i];
+        this.heady[i] = clientHeight - 150 + randomNum(1, 50);
+        this.amp[i] = randomNum(30, 80);
       }
     }
 
     Plant.prototype.draw = function () {
+      this.alpha += intervalTime * 0.001;
+      var l = Math.sin(this.alpha);
       this.stage.save();
       this.stage.globalAlpha = 0.8;
       this.stage.strokeStyle = '#8AD4DC';
@@ -96,8 +103,8 @@
       this.stage.lineCap = 'round';
       for (var i = 0; i < this.num; i++) {
         this.stage.beginPath();
-        this.stage.moveTo(this.x[i], clientHeight);
-        this.stage.lineTo(this.x[i], clientHeight - this.h[i]);
+        this.stage.moveTo(this.rootx[i], clientHeight);
+        this.stage.quadraticCurveTo(this.rootx[i], clientHeight - 80, this.headx[i] + l * this.amp[i], this.heady[i]);
         this.stage.stroke();
         this.stage.closePath();
       }
@@ -135,8 +142,8 @@
       var index = randomNum(1, 50);
       this.alive[i] = true;
       this.size[i] = 0;
-      this.x[i] = plant.x[index] - 9;
-      this.y[i] = clientHeight - plant.h[index] - 10;
+      this.x[i] = plant.headx[index] - 9;
+      this.y[i] = plant.heady[index] - 10;
       this.speed[i] = randomNum(1, 5) * 0.01;
       this.type[i] = i % 3 === 0 ? 'blue' : 'orange';
     }
@@ -307,7 +314,6 @@
           this.alive[i] = true;
           this.x[i] = x;
           this.y[i] = y;
-          log('born')
           break;
         }
       }
@@ -330,6 +336,62 @@
             this.stage.arc(this.x[i], this.y[i], this.radius[i], 0, Math.PI * 2);
             this.stage.closePath();
             this.stage.strokeStyle = `rgba(255,255,255,${alpha})`;
+            this.stage.stroke();
+          }
+        }
+      }
+      this.stage.restore();
+    }
+
+    var Halo = function (stage) {
+      this.stage = stage;
+      this.num = 10;
+      this.alive = [];
+      this.x = [];
+      this.y = [];
+      this.r = [];//半径
+    }
+
+    Halo.prototype.init = function () {
+      var i = 0;
+      while (i < this.num) {
+        this.x[i] = 0;
+        this.y[i] = 0;
+        this.alive[i] = false;
+        i++;
+      }
+    }
+
+    Halo.prototype.born = function (x, y) {
+      for (var i = 0; i < this.num; i++) {
+        if (!this.alive[i]) {
+          this.alive[i] = true;
+          this.x[i] = x;
+          this.y[i] = y;
+          this.r[i] = 10;
+          log(1)
+          break;
+        }
+      }
+    }
+
+    Halo.prototype.draw = function () {
+      this.stage.save();
+      this.stage.lineWidth = 1;
+      // this.stage.shadowBlur = 5;
+      // this.stage.shadowColor = 'rgba(203,91,0,1)';
+      for (var i = 0; i < this.num; i++) {
+        if (this.alive[i]) {
+          if (this.r[i] > 100) {
+            this.alive[i] = false;
+            this.r[i] = 0;
+          } else {
+            this.r[i] += intervalTime * 0.05;
+            var alpha = 1 - this.r[i] / 100;
+            this.stage.beginPath();
+            this.stage.arc(this.x[i], this.y[i], this.r[i], 0, Math.PI * 2);
+            this.stage.closePath();
+            this.stage.strokeStyle = 'rgba(203,91,0,' + alpha + ')';
             this.stage.stroke();
           }
         }
@@ -361,10 +423,12 @@
       var result = isIntersection(baby.x, baby.y, fish.x, fish.y);
       if (result < 600) {
         if (fish.foodCnt > 0 && HP.value <= HP.maxValue) {
+          halo.born(fish.x, fish.y);
           //当鱼妈妈喂食时需要减去自己所持有的果实数量
           fish.foodCnt--;
           //鱼宝宝获得食物后增加生命值
           HP.value++;
+          //增加喂食时的特效
         }
       }
     }
@@ -429,6 +493,8 @@
       HP.expend();
       //绘制吃果实的效果
       wave.draw();
+      //绘制大鱼喂小鱼的特效
+      halo.draw();
     }
 
     var cxt1
@@ -439,6 +505,7 @@
       , baby
       , plant
       , wave
+      , halo
       , alpha = 0
       , lastTime = 0
       , intervalTime = 0
@@ -475,6 +542,9 @@
 
       wave = new Wave(cxt1);
       wave.init();
+
+      halo = new Halo(cxt1);
+      halo.init();
 
       run();
     }();
