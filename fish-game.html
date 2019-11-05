@@ -104,7 +104,8 @@
       for (var i = 0; i < this.num; i++) {
         this.stage.beginPath();
         this.stage.moveTo(this.rootx[i], clientHeight);
-        this.stage.quadraticCurveTo(this.rootx[i], clientHeight - 80, this.headx[i] + l * this.amp[i], this.heady[i]);
+        this.headx[i] = this.rootx[i] + l * this.amp[i];
+        this.stage.quadraticCurveTo(this.rootx[i], clientHeight - 80, this.headx[i], this.heady[i]);
         this.stage.stroke();
         this.stage.closePath();
       }
@@ -114,6 +115,7 @@
     var Food = function (stage) {
       this.x = [];
       this.y = [];
+      this.indexes = [];
       this.size = [];
       this.speed = [];
       this.alive = [];
@@ -140,11 +142,12 @@
 
     Food.prototype.born = function (i) {
       var index = randomNum(1, 50);
+      this.indexes[i] = index;
       this.alive[i] = true;
       this.size[i] = 0;
-      this.x[i] = plant.headx[index] - 9;
+      this.x[i] = 0;
       this.y[i] = plant.heady[index] - 10;
-      this.speed[i] = randomNum(1, 5) * 0.01;
+      this.speed[i] = randomNum(1, 10) * 0.01;
       this.type[i] = i % 3 === 0 ? 'blue' : 'orange';
     }
 
@@ -165,19 +168,25 @@
     }
 
     Food.prototype.draw = function () {
-      var type;
+      var type, index;
       for (var i = 0; i < this.limit; i++) {
         if (this.alive[i] === false) break;
 
-        if (this.size[i] <= 1) {
-          this.size[i] += this.speed[i] * 0.05;
-        } else {
-          this.y[i] -= this.speed[i] * intervalTime;
-        }
-
         type = this.type[i] === 'blue' ? this.blue : this.orange;
 
-        this.stage.drawImage(type, this.x[i], this.y[i], 18 * this.size[i], 18 * this.size[i]);
+        index = this.indexes[i];
+
+        if (this.size[i] <= 1) {
+          this.size[i] += this.speed[i] * 0.05;
+
+          this.stage.drawImage(type, plant.headx[index] - 5, this.y[i], 18 * this.size[i], 18 * this.size[i]);
+        } else {
+          if (!this.x[i]) this.x[i] = plant.headx[index];
+
+          this.y[i] -= this.speed[i] * intervalTime;
+
+          this.stage.drawImage(type, this.x[i], this.y[i], 18 * this.size[i], 18 * this.size[i]);
+        }
 
         if (this.y[i] < 0) {
           this.alive[i] = false;

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>弹幕实现</title>
+    <meta http-equiv="keywords" content="弹幕">
+    <meta property="og:image" content=""/>
+    <meta property="og:description" content="弹幕"/>
+    <meta name="csrf-token" content="{{csrf_token()}}">
+</head>
+<style>
+    body, html {
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        margin: 0;
+    }
+
+    #app {
+        width: 100%;
+        background-color: black;
+        height: 800px;
+        text-align: center;
+        padding-top: 80px;
+    }
+
+    .stage {
+        width: 900px;
+        height: 500px;
+        margin: 0 auto;
+        position: relative;
+    }
+
+    #messages {
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+
+    video {
+        width: 100%;
+        height: 100%;
+    }
+</style>
+<body>
+<div id="app">
+    <div class="stage">
+        <video src="/video.mp4" id="video" controls autoplay></video>
+        <canvas id="messages" width="900" height="470"></canvas>
+    </div>
+</div>
+
+</body>
+<script>
+  window.onload = function () {
+    //生成指定范围的随机数
+    var randomNum = function (min, max) {
+      return parseInt(Math.random() * (max - min + 1) + min, 10)
+    }
+
+    function Channel(total) {
+      this.total = total;
+      this.container = [];
+    }
+
+    Channel.prototype.init = function (height, stageHeight) {
+      var i = 0;
+      while (i < this.total) {
+        this.container.push({'slot': -1, 'y': i * height + 20 % stageHeight});
+        i++;
+      }
+    }
+
+    Channel.prototype.get = function (index) {
+      log(index);
+      var i = 0;
+      while (i < this.total) {
+        var value = this.container[i].slot;
+        if (value === -1 || stageWidth - message.x[value] > message.width[value]) {
+          this.container[i].slot = index;
+          return this.container[i].y;
+        }
+        i++;
+      }
+      return false;
+    }
+
+    function Message(stage) {
+      this.num = 50;
+      this.x = [];
+      this.y = [];
+      this.speed = [];
+      this.list = [];
+      this.alive = [];
+      this.stage = stage;
+      this.width = [];//文本的宽度
+    }
+
+    Message.prototype.init = function () {
+      for (var i = 0; i < this.num; i++) {
+        this.x[i] = 0;
+        this.y[i] = 0;
+        this.list[i] = 0;
+        this.alive[i] = false;
+        this.speed[i] = 0;
+        this.width[i] = 0;
+      }
+    };
+
+    Message.prototype.born = function (text) {
+      var index = this.alive.indexOf(false);
+      var y = channel.get(index);
+      if (!y) return;
+      if (index !== -1) {
+        this.y[index] = y;
+        this.alive[index] = true;
+        this.x[index] = 900;
+        this.list[index] = text;
+        //当弹幕约长时划过屏幕的速度越快
+        this.speed[index] = text.length * 0.1 + Math.random();
+        //计算每个文本的宽度,每个字符是20px
+        this.width[index] = text.length * 20;
+      }
+    }
+
+    Message.prototype.draw = function () {
+      for (var i = 0; i < this.num; i++) {
+        if (!this.alive[i]) continue;
+        if (this.x[i] + this.width[i] < 0) {
+          this.alive[i] = false;
+          continue;
+        }
+
+        this.stage.fillStyle = 'white';
+        this.stage.font = "20px Verdana";
+        if (interval > 0) this.x[i] -= interval * 0.1 + this.speed[i];
+
+        this.stage.fillText(this.list[i], this.x[i], this.y[i]);
+
+      }
+    }
+
+    var log = console.log.bind(console)
+      , stageWidth = 900
+      , stageHeight = 480
+      , canvas = document.querySelector('#messages')
+      , ctx = canvas.getContext('2d')
+      , message
+      , channel;
+
+    var init = function () {
+      channel = new Channel(20);
+      channel.init(20, stageHeight);
+      message = new Message(ctx);
+      message.init();
+      message.born('Hello everybody!');
+      message.born('前来报道');
+      message.born('Hello everybody!');
+      message.born('前来报道');
+      message.born('承包女主');
+      message.born('明学');
+      message.born('承包女主');
+      message.born('前来报道');
+      message.born('Hello everybody!');
+      message.born('承包女主');
+      message.born('一层山水半层湖,一城荷花半城柳');
+      message.born('承包女主');
+      message.born('真香');
+      message.born('明学');
+      message.born('Hello everybody!');
+      message.born('明学');
+      message.born('承包女主');
+      message.born('奋不顾身');
+      message.born('明学');
+      message.born('一层山水半层湖,一城荷花半城柳');
+      message.born('can i help me');
+      message.born('明学');
+      message.born('who are you');
+      show();
+    }();
+
+    var interval = 0
+      , lastTime = Date.now()
+
+    function show() {
+      requestAnimationFrame(show);
+      var now = Date.now();
+      interval = now - lastTime;
+      lastTime = now;
+      ctx.clearRect(0, 0, stageWidth, stageHeight);
+      message.draw();
+    };
+
+    // var video = document.querySelector('#video')
+    // canvas.addEventListener('mouseover', function (e) {
+    //   video.controls = true;
+    //   log(video.controls)
+    // })
+  }
+</script>
+</html>
