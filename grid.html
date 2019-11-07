@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>css3 grid布局学习</title>
+  <style>
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+    }
+
+    .wrapper {
+      width: 100%;
+      height: 100%;
+      background: #f0f2f5;
+      display: grid;
+      /*grid-row-gap: 10px;*/
+      /*grid-column-gap: 20px;*/
+      grid-template-rows: 50px auto;
+    }
+
+    .head-box {
+      background-color: #1890ff;
+    }
+
+    .item {
+      /*background: orange;*/
+    }
+
+    .body-box {
+      display: grid;
+      grid-column-gap: 10px;
+      grid-template-columns: 250px auto 250px;
+    }
+
+    .body-box .child {
+      background: white;
+      /*border: 1px solid #d6d6d6*/
+    }
+
+    .box-center {
+      display: grid;
+      grid-template-rows: 80% minmax(180px, auto);
+      grid-template-columns: 100%;
+    }
+
+    .messages {
+      background-color: #f8f8f8;
+      border-bottom: 1px solid #e0e0e0;
+    }
+
+    .editor {
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="item head-box"></div>
+  <div class="item body-box">
+    <div class="child"></div>
+    <div class="child box-center">
+      <div class="messages"></div>
+      <div class="editor"></div>
+      <div></div>
+    </div>
+    <div class="child"></div>
+  </div>
+</div>
+</body>
+<script>
+
+</script>
+</html>
