@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>css布局案例</title>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+    }
+    body, html {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    .wrapper {
+      display: flex;
+      flex-direction: row;
+      width: 100%;
+      height: 100%;
+    }
+
+    .sidebar {
+      width: 250px;
+      height: 100%;
+      background-color: #001529;
+    }
+
+    .title {
+      height: 64px;
+      width: 100%;
+      color:white;
+      text-align: center;
+      line-height: 64px;
+      background-color: #000c17;
+    }
+
+    .main {
+      flex: auto;
+      display: flex;
+      flex-direction:column;
+      height: 100%;
+    }
+
+    .header {
+      width: 100%;
+      height: 64px;
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(0, 21, 41, .08);
+    }
+
+    .content {
+      width: 100%;
+      flex: auto;
+      background-color: #f0f2f5;
+    }
+
+    .nav {
+      float: right;
+      height: 100%;
+      width: 250px;
+      border-left: 1px solid #e0e0e0;
+    }
+
+    .extras {
+      height: 100%;
+      float: left;
+      border-left: 1px solid #e0e0e0;
+      width: 250px;
+    }
+
+    .top {
+      position: absolute;
+      top: 0;
+      bottom: 180px;
+      left: 0;
+      width: 100%;
+      background: #f8f8f8;
+    }
+
+    .bottom {
+      height: 180px;
+      border-top: 1px solid #e0e0e0;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="sidebar">
+    <h3 class="title">Customer System</h3>
+  </div>
+  <div class="main">
+    <div class="header">
+    </div>
+    <div class="content"></div>
+    <!--    <div class="nav">-->
+    <!--      寒雨连江夜入吴，平明送客楚山孤。-->
+    <!--      洛阳亲友如相问，一片冰心在玉壶。-->
+    <!--    </div>-->
+    <!--    <div class="extras">-->
+    <!--      白日依山尽，黄河入海流。-->
+    <!--      欲穷千里目，更上一层楼。-->
+    <!--    </div>-->
+    <!--    <div class="content">-->
+    <!--      <div class="top">-->
+    <!--        岭外音书断，经冬复历春。-->
+    <!--        近乡情更怯，不敢问来人。-->
+    <!--      </div>-->
+    <!--      <div class="bottom">hello world</div>-->
+    <!--    </div>-->
+  </div>
+</div>
+</body>
+</html>
