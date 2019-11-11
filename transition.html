@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>css transition的使用</title>
+  <style>
+    .box {
+      width: 200px;
+      height: 200px;
+      background-color: #1890ff;
+    }
+
+    .active:hover {
+      transform: rotate(45deg);
+      transition: transform 2s ease-out;
+    }
+  </style>
+</head>
+<body>
+  <div class="box active"></div>
+</body>
+</html>
