@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>红包雨</title>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+    }
+
+    .wrapper {
+      width: 90%;
+      height: 100%;
+      background: #e0e0e0;
+      margin: 0 auto;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hongbao {
+      position: absolute;
+      height: 64px;
+      width: 64px;
+      background-image: url('./images/hongbao.png');
+      animation: down 1.5s cubic-bezier(0.57, 0.03, 0.24, 0.93) infinite;
+    }
+
+    @keyframes down {
+      0% {
+        opacity: 0;
+      }
+      10% {
+        opacity: 1;
+      }
+      90% {
+        opacity: 1;
+      }
+      100% {
+        opacity: 0;
+        transform: translate3d(10px, 900px, -10px);
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="hongbao"></div>
+</div>
+<script>
+  let stage = document.querySelector('.wrapper');
+  let i = 0;
+  while (i < 20) {
+    let div = document.createElement('div');
+    div.classList.add('hongbao');
+    div.style.left = i * 50 + 'px';
+    div.style.marginTop = Math.random() * 50 + 'px';
+    div.style.animationDelay = Math.random() * 2 + 's';
+    stage.append(div);
+    i++;
+  }
+</script>
+</body>
+</html>
